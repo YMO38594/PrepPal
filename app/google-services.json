@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "315404029195",
+    "project_id": "preppal-e567c",
+    "storage_bucket": "preppal-e567c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:315404029195:android:be7675b09114a5ccd1660e",
+        "android_client_info": {
+          "package_name": "com.preppal"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAXXRXx14dxRmEd9bXywX2iNEkUGHEV7dg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

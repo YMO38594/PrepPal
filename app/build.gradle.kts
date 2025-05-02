@@ -54,6 +54,7 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation(libs.firebase.database)
     testImplementation(libs.junit)
+    implementation(libs.material3)
     implementation (libs.androidx.work.runtime.ktx)
     implementation (libs.androidx.core.ktx.v1101)
     implementation (libs.material3)

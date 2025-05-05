@@ -71,7 +71,7 @@ fun ReminderScreen(navController: NavController) {
                     title = title,
                     delayInMinutes = delay
                 )
-                navController.popBackStack() // or navigate to confirmation screen
+                navController.popBackStack()
             },
             modifier = Modifier.align(Alignment.End)
         ) {

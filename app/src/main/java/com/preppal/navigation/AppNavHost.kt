@@ -14,6 +14,8 @@ import com.preppal.navigation.ROUTE_START
 import com.preppal.ui.theme.screens.classes.ReminderScreen
 import com.preppal.ui.theme.screens.home.HomeScreen
 import com.preppal.ui.theme.screens.login.LoginScreen
+import com.preppal.ui.theme.screens.notes.NotesScreen
+import com.preppal.ui.theme.screens.profile.ProfileScreen
 import com.preppal.ui.theme.screens.registration.RegisterScreen
 import com.preppal.ui.theme.screens.splash.SplashScreen
 
@@ -47,6 +49,10 @@ fun AppNavHost(
         composable (ROUTE_CLASS){
             ReminderScreen (navController)
         }
+        composable(ROUTE_NOTES){
+            NotesScreen()
+        }
+        composable("profile") { ProfileScreen(navController) }
     }
 }
 

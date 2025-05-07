@@ -9,14 +9,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -24,19 +22,27 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import coil3.compose.AsyncImage
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.viewinterop.AndroidView
 import com.preppal.navigation.ROUTE_CLASS
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import com.preppal.BottomNavigationBar
 import java.util.regex.Pattern
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.TopAppBar
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun HomeScreen(navController: NavHostController) {
     Scaffold(
-        topBar = { HomeTopBar() },
+        topBar = { HomeTopBar(navController) },
         floatingActionButton = {
             Button(
                 onClick = {
@@ -68,21 +74,86 @@ fun HomeScreen(navController: NavHostController) {
     }
 }
 
+@Composable
+fun AppNavigator() {
+    val navController = rememberNavController()
+
+    Scaffold(
+        bottomBar = {
+            BottomNavigationBar(navController)
+        }
+    ) { innerPadding ->
+        NavHost(
+            navController = navController,
+            startDestination = "home",
+            modifier = Modifier.padding(innerPadding)
+        ) {
+            composable("home") { HomeScreen(navController) }
+        }
+    }
+}
+
+@Composable
+fun BottomNavigationBar(navController: NavController) {
+    NavigationBar {
+        NavigationBarItem(
+            icon = { Icon(Icons.Default.Home, contentDescription = null) },
+            label = { Text("Home") },
+            selected = navController.currentDestination?.route == "home",
+            onClick = { navController.navigate("home") }
+        )
+        NavigationBarItem(
+            icon = { Icon(Icons.Default.AddCircle, contentDescription = null) },
+            label = { Text("Notes") },
+            selected = navController.currentDestination?.route == "notes",
+            onClick = {
+                navController.navigate("notes") {
+
+                    popUpTo(navController.graph.findStartDestination().id) {
+                        saveState = true
+                    }
+                    launchSingleTop = true
+                    restoreState = true
+                }
+            }
+        )
+    }
+}
+
+
+
+
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeTopBar() {
+fun HomeTopBar(navController: NavController) {
     TopAppBar(
         title = { Text("PrepPal") },
         actions = {
             IconButton(onClick = {/*Search*/ }) {
                 Icon(Icons.Default.Search, contentDescription = null)
             }
-            IconButton(onClick = {/*Profile*/ }) {
-                Icon(Icons.Default.AccountCircle, contentDescription = null)
+            IconButton(
+                onClick = {
+                    navController.navigate("profile") {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = "Profile"
+                )
             }
         }
     )
 }
+
+
 
 @Composable
 fun CategoryTabs(categories: List<String>, selected: Int, onCategorySelected: (Int) -> Unit) {

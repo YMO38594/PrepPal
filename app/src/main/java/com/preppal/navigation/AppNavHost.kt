@@ -24,7 +24,7 @@ import com.preppal.ui.theme.screens.splash.SplashScreen
 fun AppNavHost(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
-    startDestination: String = ROUTE_HOME
+    startDestination: String = ROUTE_START
 ) {
 
     NavHost(

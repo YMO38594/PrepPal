@@ -32,8 +32,6 @@ fun NotesScreen() {
         )
 
         Spacer(modifier = Modifier.height(16.dp))
-
-        // Button to open the notes
         Button(
             onClick = {
                 if (noteUrl.isNotBlank()) {
@@ -41,7 +39,6 @@ fun NotesScreen() {
                         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(noteUrl))
                         context.startActivity(intent)
                     } catch (e: Exception) {
-                        // Handle invalid URL
                     }
                 }
             },
@@ -51,8 +48,6 @@ fun NotesScreen() {
         }
 
         Spacer(modifier = Modifier.height(24.dp))
-
-        // Quick links to popular note services
         Text("Popular note services:", style = MaterialTheme.typography.labelMedium)
         Spacer(modifier = Modifier.height(8.dp))
 

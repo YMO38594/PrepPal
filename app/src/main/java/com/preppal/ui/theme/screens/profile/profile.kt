@@ -27,6 +27,7 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import com.preppal.R
+import com.preppal.navigation.ROUTE_LOGIN
 import com.preppal.ui.theme.screens.components.ConfirmationDialog
 import com.preppal.ui.theme.navigation.Screen
 import com.preppal.util.rememberToast
@@ -40,18 +41,12 @@ fun ProfileScreen(navController: NavController) {
     val currentUser = auth.currentUser
     val database = Firebase.database.reference
 
-    var username by remember { mutableStateOf("Loading...") }
-    var email by remember { mutableStateOf("Loading...") }
+    var username by remember { mutableStateOf("$currentUser") }
+    var email by remember { mutableStateOf("$currentUser") }
     var bio by remember { mutableStateOf("") }
     var isEditing by remember { mutableStateOf(false) }
     var showLogoutDialog by remember { mutableStateOf(false) }
-    val showToast = rememberToast() // Get the toast function
-
-        Button(onClick = {
-            showToast("Logged out successfully")
-        }) {
-            Text("Log Out")
-        }
+    val showToast = rememberToast()
 
     LaunchedEffect(currentUser?.uid) {
         currentUser?.uid?.let { userId ->
@@ -88,7 +83,6 @@ fun ProfileScreen(navController: NavController) {
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        // Profile Header
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -108,7 +102,7 @@ fun ProfileScreen(navController: NavController) {
             )
 
             IconButton(
-                onClick = { showLogoutDialog = true }
+                onClick = {navController.navigate(ROUTE_LOGIN)}
             ) {
                 Icon(Icons.Default.ExitToApp, contentDescription = "Logout")
             }
@@ -154,8 +148,6 @@ fun ProfileScreen(navController: NavController) {
         }
 
         Spacer(modifier = Modifier.height(24.dp))
-
-        // Bio Section
         Card(
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -206,19 +198,6 @@ fun ProfileScreen(navController: NavController) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Stats Section
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            ProfileStat(count = "142", label = "Posts")
-            ProfileStat(count = "3.2K", label = "Followers")
-            ProfileStat(count = "287", label = "Following")
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Settings Section
         Column(
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -246,8 +225,6 @@ fun ProfileScreen(navController: NavController) {
             )
         }
     }
-
-    // Logout Confirmation Dialog
     if (showLogoutDialog) {
         ConfirmationDialog(
             title = "Log Out",

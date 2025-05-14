@@ -130,9 +130,6 @@ fun HomeTopBar(navController: NavController) {
     TopAppBar(
         title = { Text("PrepPal") },
         actions = {
-            IconButton(onClick = {/*Search*/ }) {
-                Icon(Icons.Default.Search, contentDescription = null)
-            }
             IconButton(
                 onClick = {
                     navController.navigate("profile") {

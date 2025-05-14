@@ -30,6 +30,7 @@ import com.preppal.ui.theme.screens.home.HomeScreen
 import com.preppal.ui.theme.screens.notes.NotesScreen
 import com.preppal.ui.theme.screens.profile.ProfileScreen
 import com.preppal.ui.theme.screens.login.LoginScreen
+import com.preppal.ui.theme.screens.registration.RegisterScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -65,6 +66,7 @@ fun AppNavigator() {
             composable("notes") { NotesScreen() }
             composable("profile") { ProfileScreen(navController) }
             composable("login") { LoginScreen(navController) }
+            composable("register") { RegisterScreen(navController) }
             }
         }
         }

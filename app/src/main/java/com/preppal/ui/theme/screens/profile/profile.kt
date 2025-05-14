@@ -1,5 +1,6 @@
 package com.preppal.ui.theme.screens.profile
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -17,9 +18,11 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -207,22 +210,296 @@ fun ProfileScreen(navController: NavController) {
                 modifier = Modifier.padding(bottom = 8.dp)
             )
 
+            var showEmailDialog by remember { mutableStateOf(false) }
+            var showPasswordDialog by remember { mutableStateOf(false) }
+            var showDeleteDialog by remember { mutableStateOf(false) }
+            val auth = Firebase.auth
+            val context = LocalContext.current
+
+            // Change Email
             ProfileSettingItem(
                 icon = Icons.Default.Email,
                 text = "Change Email",
-                onClick = { /* TODO */ }
+                onClick = { showEmailDialog = true }
             )
+
+            if (showEmailDialog) {
+                var newEmail by remember { mutableStateOf("") }
+                var password by remember { mutableStateOf("") }
+                var isLoading by remember { mutableStateOf(false) }
+                var errorMessage by remember { mutableStateOf<String?>(null) }
+
+                AlertDialog(
+                    onDismissRequest = { showEmailDialog = false },
+                    title = { Text("Change Email") },
+                    text = {
+                        Column {
+                            if (errorMessage != null) {
+                                Text(
+                                    text = errorMessage!!,
+                                    color = MaterialTheme.colorScheme.error,
+                                    modifier = Modifier.padding(bottom = 8.dp)
+                                )
+                            }
+                            OutlinedTextField(
+                                value = newEmail,
+                                onValueChange = { newEmail = it },
+                                label = { Text("New Email") },
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            OutlinedTextField(
+                                value = password,
+                                onValueChange = { password = it },
+                                label = { Text("Current Password") },
+                                visualTransformation = PasswordVisualTransformation(),
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                    },
+                    confirmButton = {
+                        Button(
+                            onClick = {
+                                if (newEmail.isEmpty() || password.isEmpty()) {
+                                    errorMessage = "Please fill all fields"
+                                    return@Button
+                                }
+
+                                isLoading = true
+                                val user = auth.currentUser
+                                val credential = EmailAuthProvider
+                                    .getCredential(user?.email ?: "", password)
+
+                                user?.reauthenticate(credential)?.addOnCompleteListener { reauthTask ->
+                                    if (reauthTask.isSuccessful) {
+                                        user.updateEmail(newEmail)
+                                            .addOnCompleteListener { updateTask ->
+                                                isLoading = false
+                                                if (updateTask.isSuccessful) {
+                                                    Toast.makeText(context, "Email updated successfully", Toast.LENGTH_SHORT).show()
+                                                    showEmailDialog = false
+                                                } else {
+                                                    errorMessage = updateTask.exception?.message ?: "Failed to update email"
+                                                }
+                                            }
+                                    } else {
+                                        isLoading = false
+                                        errorMessage = "Authentication failed: ${reauthTask.exception?.message}"
+                                    }
+                                }
+                            },
+                            enabled = !isLoading
+                        ) {
+                            if (isLoading) CircularProgressIndicator() else Text("Update")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(
+                            onClick = { showEmailDialog = false }
+                        ) {
+                            Text("Cancel")
+                        }
+                    }
+                )
+            }
+
+            // Change Password
             ProfileSettingItem(
                 icon = Icons.Default.Lock,
                 text = "Change Password",
-                onClick = { /* TODO */ }
+                onClick = { showPasswordDialog = true }
             )
+
+            if (showPasswordDialog) {
+                var currentPassword by remember { mutableStateOf("") }
+                var newPassword by remember { mutableStateOf("") }
+                var confirmPassword by remember { mutableStateOf("") }
+                var isLoading by remember { mutableStateOf(false) }
+                var errorMessage by remember { mutableStateOf<String?>(null) }
+
+                AlertDialog(
+                    onDismissRequest = { showPasswordDialog = false },
+                    title = { Text("Change Password") },
+                    text = {
+                        Column {
+                            if (errorMessage != null) {
+                                Text(
+                                    text = errorMessage!!,
+                                    color = MaterialTheme.colorScheme.error,
+                                    modifier = Modifier.padding(bottom = 8.dp)
+                                )
+                            }
+                            OutlinedTextField(
+                                value = currentPassword,
+                                onValueChange = { currentPassword = it },
+                                label = { Text("Current Password") },
+                                visualTransformation = PasswordVisualTransformation(),
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            OutlinedTextField(
+                                value = newPassword,
+                                onValueChange = { newPassword = it },
+                                label = { Text("New Password") },
+                                visualTransformation = PasswordVisualTransformation(),
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            OutlinedTextField(
+                                value = confirmPassword,
+                                onValueChange = { confirmPassword = it },
+                                label = { Text("Confirm New Password") },
+                                visualTransformation = PasswordVisualTransformation(),
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                    },
+                    confirmButton = {
+                        Button(
+                            onClick = {
+                                if (newPassword != confirmPassword) {
+                                    errorMessage = "Passwords don't match"
+                                    return@Button
+                                }
+                                if (newPassword.length < 6) {
+                                    errorMessage = "Password must be at least 6 characters"
+                                    return@Button
+                                }
+
+                                isLoading = true
+                                val user = auth.currentUser
+                                val credential = EmailAuthProvider
+                                    .getCredential(user?.email ?: "", currentPassword)
+
+                                user?.reauthenticate(credential)?.addOnCompleteListener { reauthTask ->
+                                    if (reauthTask.isSuccessful) {
+                                        user.updatePassword(newPassword)
+                                            .addOnCompleteListener { updateTask ->
+                                                isLoading = false
+                                                if (updateTask.isSuccessful) {
+                                                    Toast.makeText(context, "Password updated successfully", Toast.LENGTH_SHORT).show()
+                                                    showPasswordDialog = false
+                                                } else {
+                                                    errorMessage = updateTask.exception?.message ?: "Failed to update password"
+                                                }
+                                            }
+                                    } else {
+                                        isLoading = false
+                                        errorMessage = "Authentication failed: ${reauthTask.exception?.message}"
+                                    }
+                                }
+                            },
+                            enabled = !isLoading
+                        ) {
+                            if (isLoading) CircularProgressIndicator() else Text("Update")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(
+                            onClick = { showPasswordDialog = false }
+                        ) {
+                            Text("Cancel")
+                        }
+                    }
+                )
+            }
+
+            // Delete Account
             ProfileSettingItem(
                 icon = Icons.Default.Delete,
                 text = "Delete Account",
                 color = MaterialTheme.colorScheme.error,
-                onClick = { /* TODO */ }
+                onClick = { showDeleteDialog = true }
             )
+
+            if (showDeleteDialog) {
+                var password by remember { mutableStateOf("") }
+                var isLoading by remember { mutableStateOf(false) }
+                var errorMessage by remember { mutableStateOf<String?>(null) }
+
+                AlertDialog(
+                    onDismissRequest = { showDeleteDialog = false },
+                    title = { Text("Delete Account") },
+                    text = {
+                        Column {
+                            Text("This action cannot be undone. All your data will be permanently deleted.")
+                            Spacer(modifier = Modifier.height(16.dp))
+                            if (errorMessage != null) {
+                                Text(
+                                    text = errorMessage!!,
+                                    color = MaterialTheme.colorScheme.error,
+                                    modifier = Modifier.padding(bottom = 8.dp)
+                                )
+                            }
+                            OutlinedTextField(
+                                value = password,
+                                onValueChange = { password = it },
+                                label = { Text("Enter Password to Confirm") },
+                                visualTransformation = PasswordVisualTransformation(),
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                    },
+                    confirmButton = {
+                        Button(
+                            onClick = {
+                                if (password.isEmpty()) {
+                                    errorMessage = "Please enter your password"
+                                    return@Button
+                                }
+
+                                isLoading = true
+                                val user = auth.currentUser
+                                val credential = EmailAuthProvider
+                                    .getCredential(user?.email ?: "", password)
+
+                                user?.reauthenticate(credential)?.addOnCompleteListener { reauthTask ->
+                                    if (reauthTask.isSuccessful) {
+                                        // First delete user data from database
+                                        Firebase.database.reference.child("users").child(user.uid).removeValue()
+                                            .addOnSuccessListener {
+                                                // Then delete auth account
+                                                user.delete()
+                                                    .addOnCompleteListener { deleteTask ->
+                                                        isLoading = false
+                                                        if (deleteTask.isSuccessful) {
+                                                            Toast.makeText(context, "Account deleted", Toast.LENGTH_SHORT).show()
+                                                            navController.navigate(ROUTE_LOGIN) {
+                                                                popUpTo(0) { inclusive = true }
+                                                            }
+                                                        } else {
+                                                            errorMessage = deleteTask.exception?.message ?: "Failed to delete account"
+                                                        }
+                                                    }
+                                            }
+                                            .addOnFailureListener { e ->
+                                                isLoading = false
+                                                errorMessage = "Failed to delete user data: ${e.message}"
+                                            }
+                                    } else {
+                                        isLoading = false
+                                        errorMessage = "Authentication failed: ${reauthTask.exception?.message}"
+                                    }
+                                }
+                            },
+                            enabled = !isLoading,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.error,
+                                contentColor = MaterialTheme.colorScheme.onError
+                            )
+                        ) {
+                            if (isLoading) CircularProgressIndicator() else Text("Delete Permanently")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(
+                            onClick = { showDeleteDialog = false }
+                        ) {
+                            Text("Cancel")
+                        }
+                    }
+                )
+            }
         }
     }
     if (showLogoutDialog) {
